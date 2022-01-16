@@ -68,12 +68,14 @@ module Hass {
     hidden var _mName; // Name
     hidden var _mState; // Current State
     hidden var _mExt; // Is this entity loaded from settings?
+    hidden var _mInfo; // Custom state info text
 
     function initialize(entity) {
       _mId = entity[:id];
       _mName = entity[:name];
       _mState = Entity.stringToState(entity[:state]);
       _mExt = entity[:ext] == true;
+      _mInfo = "";
 
       if (_mId.find("scene.") != null) {
         _mType = TYPE_SCENE;
@@ -93,6 +95,8 @@ module Hass {
         _mType = TYPE_BINARY_SENSOR;
       } else if (_mId.find("input_boolean.") != null) {
         _mType = TYPE_INPUT_BOOLEAN;
+      } else if (_mId.find("person.") != null) {
+        _mType = TYPE_PERSON;
       } else {
         _mType = TYPE_UNKNOWN;
       }
@@ -103,7 +107,15 @@ module Hass {
     }
 
     function getName() {
-      return _mName;
+      // Hack to get custom state text
+      if (_mState == STATE_CUSTOM) {
+        // Capitalize first letter of state to make it look nicer
+        var statusText = _mInfo.substring(0, 1).toUpper() + _mInfo.substring(1, _mInfo.length());
+        return _mName + "\n" + statusText;
+      }
+      else {
+        return _mName;
+      }
     }
 
     function setName(newName) {
@@ -115,6 +127,13 @@ module Hass {
     }
 
     function setState(newState) {
+      if (_mType == TYPE_PERSON &&
+          newState instanceof String) {
+        _mState = STATE_CUSTOM;
+        _mInfo = newState;
+        return;
+      }
+
       if (newState instanceof String) {
         _mState = Entity.stringToState(newState);
         return;
@@ -128,6 +147,7 @@ module Hass {
         && newState != STATE_UNLOCKED
         && newState != STATE_CLOSED
         && newState != STATE_OPEN
+        && newState != STATE_CUSTOM
         && newState != STATE_UNKNOWN
       ) {
         throw new InvalidValueException("state must be a valid Entity state");

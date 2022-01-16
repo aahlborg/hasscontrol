@@ -19,6 +19,7 @@ module Hass {
         TYPE_BINARY_SENSOR,
         TYPE_INPUT_BOOLEAN,
         TYPE_AUTOMATION,
+        TYPE_PERSON,
         TYPE_UNKNOWN
     }
 
@@ -29,6 +30,7 @@ module Hass {
         STATE_UNLOCKED,
         STATE_CLOSED,
         STATE_OPEN,
+        STATE_CUSTOM,
         STATE_UNKNOWN
     }
 
